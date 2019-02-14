@@ -3,8 +3,8 @@ import { Car } from '../../components/domain/car';
 import { CarService } from '../../service/carservice';
 
 @Component({
-    templateUrl: './tablecruddemo.html',
-    styles: [`
+  templateUrl: './tablecruddemo.html',
+  styles: [`
         .ui-g label {
             font-weight: bold;
             margin-top: .25em;
@@ -14,67 +14,67 @@ import { CarService } from '../../service/carservice';
 })
 export class TableCrudDemo implements OnInit {
 
-    displayDialog: boolean;
+  displayDialog: boolean;
 
-    car: Car = {};
+  car: Car = {};
 
-    selectedCar: Car;
+  selectedCar: Car;
 
-    newCar: boolean;
+  newCar: boolean;
 
-    cars: Car[];
+  cars: Car[];
 
-    cols: any[];
+  cols: any[];
 
-    constructor(private carService: CarService) { }
+  constructor(private carService: CarService) { }
 
-    ngOnInit() {
-        this.carService.getCarsSmall().then(cars => this.cars = cars);
+  ngOnInit() {
+    this.carService.getCarsSmall().then(cars => this.cars = cars);
 
-        this.cols = [
-            { field: 'vin', header: 'Vin' },
-            { field: 'year', header: 'Year' },
-            { field: 'brand', header: 'Brand' },
-            { field: 'color', header: 'Color' }
-        ];
+    this.cols = [
+      { field: 'vin', header: 'Vin' },
+      { field: 'year', header: 'Year' },
+      { field: 'brand', header: 'Brand' },
+      { field: 'color', header: 'Color' }
+    ];
+  }
+
+  showDialogToAdd() {
+    this.newCar = true;
+    this.car = {};
+    this.displayDialog = true;
+  }
+
+  save() {
+    let cars = [...this.cars];
+    if (this.newCar)
+      cars.push(this.car);
+    else
+      cars[this.cars.indexOf(this.selectedCar)] = this.car;
+
+    this.cars = cars;
+    this.car = null;
+    this.displayDialog = false;
+  }
+
+  delete() {
+    let index = this.cars.indexOf(this.selectedCar);
+    this.cars = this.cars.filter((val, i) => i != index);
+    this.car = null;
+    this.displayDialog = false;
+  }
+
+  onRowSelect(event) {
+    this.newCar = false;
+    this.car = this.cloneCar(event.data);
+    this.displayDialog = true;
+  }
+
+  cloneCar(c: Car): Car {
+    let car = {};
+    for (let prop in c) {
+      car[prop] = c[prop];
     }
-
-    showDialogToAdd() {
-        this.newCar = true;
-        this.car = {};
-        this.displayDialog = true;
-    }
-
-    save() {
-        let cars = [...this.cars];
-        if (this.newCar)
-            cars.push(this.car);
-        else
-            cars[this.cars.indexOf(this.selectedCar)] = this.car;
-
-        this.cars = cars;
-        this.car = null;
-        this.displayDialog = false;
-    }
-
-    delete() {
-        let index = this.cars.indexOf(this.selectedCar);
-        this.cars = this.cars.filter((val, i) => i != index);
-        this.car = null;
-        this.displayDialog = false;
-    }
-
-    onRowSelect(event) {
-        this.newCar = false;
-        this.car = this.cloneCar(event.data);
-        this.displayDialog = true;
-    }
-
-    cloneCar(c: Car): Car {
-        let car = {};
-        for (let prop in c) {
-            car[prop] = c[prop];
-        }
-        return car;
-    }
+    return car;
+  }
 }
