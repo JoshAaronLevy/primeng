@@ -590,7 +590,7 @@ export class Table
             else if (this.sortMode == 'multiple' && this.multiSortMeta)
                 this.sortMultiple();
             else if (this.hasFilter())
-                //sort already filters
+                // sort already filters
                 this._filter();
         }
 
@@ -633,7 +633,7 @@ export class Table
     set sortField(val: string) {
         this._sortField = val;
 
-        //avoid triggering lazy load prior to lazy initialization at onInit
+        // avoid triggering lazy load prior to lazy initialization at onInit
         if (!this.lazy || this.initialized) {
             if (this.sortMode === 'single') {
                 this.sortSingle();
@@ -647,7 +647,7 @@ export class Table
     set sortOrder(val: number) {
         this._sortOrder = val;
 
-        //avoid triggering lazy load prior to lazy initialization at onInit
+        // avoid triggering lazy load prior to lazy initialization at onInit
         if (!this.lazy || this.initialized) {
             if (this.sortMode === 'single') {
                 this.sortSingle();
@@ -1103,7 +1103,8 @@ export class Table
                 this.contextMenuSelectionChange.emit(rowData);
                 this.onContextMenuSelect.emit({
                     originalEvent: event.originalEvent,
-                    data: rowData
+                    data: rowData,
+                    index: event.rowIndex
                 });
                 this.contextMenu.show(event.originalEvent);
                 this.tableService.onContextMenu(rowData);
@@ -1133,7 +1134,8 @@ export class Table
                 this.contextMenu.show(event.originalEvent);
                 this.onContextMenuSelect.emit({
                     originalEvent: event,
-                    data: rowData
+                    data: rowData,
+                    index: event.rowIndex
                 });
             }
         }
@@ -1779,7 +1781,7 @@ export class Table
             data = this.selection || [];
         }
 
-        //headers
+        // headers
         for (let i = 0; i < this.columns.length; i++) {
             let column = this.columns[i];
             if (column.exportable !== false && column.field) {
@@ -1791,7 +1793,7 @@ export class Table
             }
         }
 
-        //body
+        // body
         data.forEach((record, i) => {
             csv += '\n';
             for (let i = 0; i < this.columns.length; i++) {
@@ -2365,7 +2367,7 @@ export class Table
                 dropIndex: this.droppedRowIndex
             });
         }
-        //cleanup
+        // cleanup
         this.onRowDragLeave(event, rowElement);
         this.onRowDragEnd(event);
     }
@@ -3123,7 +3125,7 @@ export class ScrollableView
                 let relativeHeight;
                 this.scrollBodyViewChild.nativeElement.style.visibility =
                     'hidden';
-                this.scrollBodyViewChild.nativeElement.style.height = '100px'; //temporary height to calculate static height
+                this.scrollBodyViewChild.nativeElement.style.height = '100px'; // temporary height to calculate static height
                 let containerHeight = DomHandler.getOuterHeight(
                     this.dt.el.nativeElement.children[0]
                 );
@@ -3157,7 +3159,7 @@ export class ScrollableView
                         100;
                 }
 
-                let staticHeight = containerHeight - 100; //total height of headers, footers, paginators
+                let staticHeight = containerHeight - 100; // total height of headers, footers, paginators
                 let scrollBodyHeight = relativeHeight - staticHeight;
 
                 if (this.frozen) {
@@ -3447,7 +3449,7 @@ export class SelectableRow implements OnInit, OnDestroy {
             const row = <HTMLTableRowElement>event.target;
 
             switch (event.which) {
-                //down arrow
+                // down arrow
                 case 40:
                     let nextRow = this.findNextSelectableRow(row);
                     if (nextRow) {
@@ -3457,7 +3459,7 @@ export class SelectableRow implements OnInit, OnDestroy {
                     event.preventDefault();
                     break;
 
-                //up arrow
+                // up arrow
                 case 38:
                     let prevRow = this.findPrevSelectableRow(row);
                     if (prevRow) {
@@ -3467,7 +3469,7 @@ export class SelectableRow implements OnInit, OnDestroy {
                     event.preventDefault();
                     break;
 
-                //enter
+                // enter
                 case 13:
                     this.dt.handleRowClick({
                         originalEvent: event,
@@ -3477,7 +3479,7 @@ export class SelectableRow implements OnInit, OnDestroy {
                     break;
 
                 default:
-                    //no op
+                    // no op
                     break;
             }
         }
@@ -3580,6 +3582,8 @@ export class SelectableRowDblClick implements OnInit, OnDestroy {
 export class ContextMenuRow {
     @Input('pContextMenuRow') data: any;
 
+    @Input('pContextMenuRowIndex') index: number;
+
     @Input() pContextMenuRowDisabled: boolean;
 
     selected: boolean;
@@ -3601,7 +3605,8 @@ export class ContextMenuRow {
         if (this.isEnabled()) {
             this.dt.handleRowRightClick({
                 originalEvent: event,
-                rowData: this.data
+                rowData: this.data,
+                rowIndex: this.index
             });
 
             event.preventDefault();
@@ -3932,7 +3937,7 @@ export class EditableColumn implements AfterViewInit {
     @HostListener('keydown', ['$event'])
     onKeyDown(event: KeyboardEvent) {
         if (this.isEnabled()) {
-            //enter
+            // enter
             if (event.keyCode == 13) {
                 if (this.dt.isEditingCellValid()) {
                     this.closeEditingCell();
@@ -3945,7 +3950,7 @@ export class EditableColumn implements AfterViewInit {
                 event.preventDefault();
             }
 
-            //escape
+            // escape
             else if (event.keyCode == 27) {
                 if (this.dt.isEditingCellValid()) {
                     this.closeEditingCell();
@@ -3958,7 +3963,7 @@ export class EditableColumn implements AfterViewInit {
                 event.preventDefault();
             }
 
-            //tab
+            // tab
             else if (event.keyCode == 9) {
                 this.dt.onEditComplete.emit({
                     field: this.field,
