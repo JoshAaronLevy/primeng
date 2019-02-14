@@ -4,13 +4,13 @@ import { CarService } from '../../service/carservice';
 
 @Component({
     templateUrl: './tablecruddemo.html',
-    styles: [`        
+    styles: [`
         .ui-g label {
-          font-weight: bold;
-          margin-top: .25em;
-          display: block;
+            font-weight: bold;
+            margin-top: .25em;
+            display: block;
         }
-  `]
+    `]
 })
 export class TableCrudDemo implements OnInit {
 
