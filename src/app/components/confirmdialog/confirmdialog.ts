@@ -35,11 +35,11 @@ import {Subscription}   from 'rxjs';
     animations: [
         trigger('animation', [
             state('void', style({
-                transform: 'translate3d(-50%, -25%, 0) scale(0.9)',
+                transform: 'translateX(-50%) translateY(-50%) translateZ(0) scale(0.7)',
                 opacity: 0
             })),
             state('visible', style({
-                transform: 'translateX(-50%) translateY(-50%)',
+                transform: 'translateX(-50%) translateY(-50%) translateZ(0) scale(1)',
                 opacity: 1
             })),
             transition('* => *', animate('{{transitionParams}}'))
@@ -76,8 +76,9 @@ export class ConfirmDialog implements OnDestroy {
     
     @Input() rejectButtonStyleClass: string;
 
-   
     @Input() closeOnEscape: boolean = true;
+
+    @Input() blockScroll: boolean = true;
 
     @Input() rtl: boolean;
 
@@ -91,7 +92,7 @@ export class ConfirmDialog implements OnDestroy {
     
     @Input() baseZIndex: number = 0;
     
-    @Input() transitionOptions: string = '400ms cubic-bezier(0.25, 0.8, 0.25, 1)';
+    @Input() transitionOptions: string = '150ms cubic-bezier(0, 0, 0.2, 1)';
 
     @ContentChild(Footer) footer;
 
@@ -137,6 +138,10 @@ export class ConfirmDialog implements OnDestroy {
                 if (this.confirmation.reject) {
                     this.confirmation.rejectEvent = new EventEmitter();
                     this.confirmation.rejectEvent.subscribe(this.confirmation.reject);
+                }
+
+                if (this.confirmation.blockScroll === false) {
+                    this.blockScroll = this.confirmation.blockScroll;
                 }
 
                 this.visible = true;
@@ -213,6 +218,10 @@ export class ConfirmDialog implements OnDestroy {
             DomHandler.addMultipleClasses(this.mask, 'ui-widget-overlay ui-dialog-mask');
             document.body.appendChild(this.mask);
             DomHandler.addClass(document.body, 'ui-overflow-hidden');
+
+            if(this.blockScroll) {
+                DomHandler.addClass(document.body, 'ui-overflow-hidden');
+            }
         }
     }
     
@@ -220,6 +229,11 @@ export class ConfirmDialog implements OnDestroy {
         if (this.mask) {
             document.body.removeChild(this.mask);
             DomHandler.removeClass(document.body, 'ui-overflow-hidden');
+
+            if(this.blockScroll) {            
+                DomHandler.removeClass(document.body, 'ui-overflow-hidden');
+            }
+            
             this.mask = null;
         }
     }
@@ -247,7 +261,7 @@ export class ConfirmDialog implements OnDestroy {
         if (this.closeOnEscape && this.closable && !this.documentEscapeListener) {
             this.documentEscapeListener = this.renderer.listen('document', 'keydown', (event) => {
                 if (event.which == 27) {
-                    if (parseInt(this.container.style.zIndex) === DomHandler.zindex && this.visible) {
+                    if (parseInt(this.container.style.zIndex) === (DomHandler.zindex + this.baseZIndex) && this.visible) {
                         this.close(event);
                     }
                 }
