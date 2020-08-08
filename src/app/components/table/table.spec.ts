@@ -1,14 +1,13 @@
 import {ScrollingModule} from '@angular/cdk/scrolling';
 import { TestBed, ComponentFixture, fakeAsync, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { Table, TableBody, ScrollableView, SortableColumn, SelectableRow, RowToggler, ContextMenuRow, ResizableColumn, ReorderableColumn, EditableColumn, CellEditor, SortIcon, TableRadioButton, TableCheckbox, TableHeaderCheckbox, ReorderableRowHandle, ReorderableRow, SelectableRowDblClick } from './table';
+import { Table, TableModule, EditableColumn } from './table';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Component } from '@angular/core';
-import { Paginator } from '../paginator/paginator';
-import {Dropdown, DropdownItem} from '../dropdown/dropdown';
+import { DropdownModule} from 'primeng/dropdown';
 import { FormsModule } from '@angular/forms';
-import { SharedModule } from '../common/shared';
-import { ContextMenu, ContextMenuSub } from '../contextmenu/contextmenu';
+import { SharedModule } from 'primeng/api';
+import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { RouterTestingModule } from '@angular/router/testing';
 
 @Component({
@@ -51,7 +50,7 @@ import { RouterTestingModule } from '@angular/router/testing';
     <p-table class="filterTable" #dt [columns]="cols" [value]="cars">
         <ng-template pTemplate="caption">
             <div style="text-align: right">        
-                <i class="fa fa-search" style="margin:4px 4px 0 0"></i>
+                <i class="pi pi-search" style="margin:4px 4px 0 0"></i>
                 <input type="text" class="globalFilter" pInputText size="50" placeholder="Global Filter" (input)="dt.filterGlobal($event.target.value, 'contains')" style="width:auto">
             </div>
         </ng-template>
@@ -233,21 +232,21 @@ import { RouterTestingModule } from '@angular/router/testing';
         <ng-template pTemplate="rowexpansion" let-rowData let-columns="columns">
             <tr>
                 <td [attr.colspan]="columns.length + 1">
-                    <div class="ui-g ui-fluid expandedRow" style="font-size:16px;padding:20px">
-                        <div class="ui-g-12 ui-md-3" style="text-align:center">
+                    <div class="p-grid ui-fluid expandedRow" style="font-size:16px;padding:20px">
+                        <div class="p-col-12 p-md-3" style="text-align:center">
                         </div>
-                        <div class="ui-g-12 ui-md-9">
-                            <div class="ui-g">
-                                <div class="ui-g-12">
+                        <div class="p-col-12 p-md-9">
+                            <div class="p-grid">
+                                <div class="p-col-12">
                                     <b>Vin:</b> {{rowData.vin}}
                                 </div>
-                                <div class="ui-g-12">
+                                <div class="p-col-12">
                                     <b>Year:</b> {{rowData.year}}
                                 </div>
-                                <div class="ui-g-12">
+                                <div class="p-col-12">
                                     <b>Brand:</b> {{rowData.brand}}
                                 </div>
-                                <div class="ui-g-12">
+                                <div class="p-col-12">
                                     <b>Color:</b> {{rowData.color}}
                                 </div>
                             </div>
@@ -290,7 +289,7 @@ import { RouterTestingModule } from '@angular/router/testing';
         <ng-template pTemplate="body" let-rowData let-columns="columns" let-index="rowIndex">
             <tr [pReorderableRow]="index">
                 <td>
-                    <i class="fa fa-bars" pReorderableRowHandle></i>
+                    <i class="pi pi-bars" pReorderableRowHandle></i>
                 </td>
                 <td *ngFor="let col of columns">
                     {{rowData[col.field]}}
@@ -429,36 +428,17 @@ describe('Table', () => {
                 FormsModule,
                 SharedModule,
                 ScrollingModule,
+                DropdownModule,
+                ContextMenuModule,
+                TableModule,
                 RouterTestingModule.withRoutes([
                     { path: 'test', component: ContextMenu }
                 ]),
 
             ],
             declarations: [
-                Table,
-                SortableColumn,
-                SelectableRow,
-                RowToggler,
-                ContextMenuRow,
-                ResizableColumn,
-                ReorderableColumn,
-                EditableColumn,
-                CellEditor,
-                TableBody,
-                ScrollableView,
-                SortIcon,
-                TableRadioButton,
-                TableCheckbox,
-                TableHeaderCheckbox,
-                ReorderableRowHandle,
-                ReorderableRow,
-                SelectableRowDblClick,
-                Paginator,
-                Dropdown,
-                DropdownItem,
-                ContextMenu,
-                ContextMenuSub,
                 TestBasicTableComponent,
+                EditableColumn
             ]
         });
 
@@ -596,7 +576,7 @@ describe('Table', () => {
         expect(bodyRows.length).toEqual(0);
     }));
 
-    it('should use endsWith filter and show 1 item', fakeAsync(() => {
+    it('should use endsWith filter and show 1 item. It should clear the filter and show 10 item.', fakeAsync(() => {
         fixture.detectChanges();
         
         filterTable.filter("231ff","vin","endsWith");
@@ -606,6 +586,12 @@ describe('Table', () => {
         let tableEl = fixture.debugElement.query(By.css(".filterTable"));
         let bodyRows = tableEl.query(By.css('.ui-table-tbody')).queryAll(By.css('tr'));
         expect(bodyRows.length).toEqual(1);
+        filterTable.filter(null,"vin","endsWith");
+        tick(300);
+        fixture.detectChanges();
+
+        bodyRows = tableEl.query(By.css('.ui-table-tbody')).queryAll(By.css('tr'));
+        expect(bodyRows.length).toEqual(10);
     }));
 
     it('should use equals filter and show 1 item', fakeAsync(() => {
@@ -1122,6 +1108,7 @@ describe('Table', () => {
         fixture.detectChanges();
 
         let cell = fixture.debugElement.query(By.css(".ui-editable-column"));
+        let editableDir = cell.parent.query(By.directive(EditableColumn)).injector.get(EditableColumn);
         cell.nativeElement.click();
         fixture.detectChanges();
 
@@ -1130,6 +1117,7 @@ describe('Table', () => {
         keydownEvent.keyCode = 13;
         keydownEvent.initEvent('keydown', true, true);
         cell.nativeElement.dispatchEvent(keydownEvent);
+        editableDir.onEnterKeyDown(keydownEvent);
         fixture.detectChanges();
 
         expect(editableTable.editingCell).toBeFalsy();
@@ -1139,6 +1127,7 @@ describe('Table', () => {
         expect(editableTable.editingCell).toBeTruthy();
         keydownEvent.keyCode = 27;
         cell.nativeElement.dispatchEvent(keydownEvent);
+        editableDir.onEscapeKeyDown(keydownEvent);
         fixture.detectChanges();
 
         expect(editableTable.editingCell).toBeFalsy();
@@ -1149,15 +1138,20 @@ describe('Table', () => {
 
         let cellEls = fixture.debugElement.queryAll(By.css(".ui-editable-column"));
         let cell = cellEls[0];
+        let editableDir = cell.parent.query(By.directive(EditableColumn)).injector.get(EditableColumn);
+        const moveToNextCellSpy = spyOn(editableDir, 'moveToNextCell').and.callThrough();
         cell.nativeElement.click();
         fixture.detectChanges();
 
         expect(editableTable.editingCell).toBeTruthy();
-        cell.triggerEventHandler("keydown",{target:cell.children[0].children[0].nativeElement,keyCode:9,preventDefault(){}})
+        const keydownEvent: any = document.createEvent('CustomEvent');
+        keydownEvent.keyCode = 9;
+        keydownEvent.initEvent('keydown', true, true);
+        keydownEvent.shiftKey = false;
+        editableDir.onShiftKeyDown(keydownEvent);
         fixture.detectChanges();
 
-        expect(editableTable.editingCell).not.toEqual(cell.nativeElement);
-        expect(editableTable.editingCell).toEqual(cellEls[1].nativeElement);
+        expect(moveToNextCellSpy).toHaveBeenCalled();
     });
 
     it('should open prev cell', () => {
@@ -1169,11 +1163,16 @@ describe('Table', () => {
         fixture.detectChanges();
 
         expect(editableTable.editingCell).toBeTruthy();
-        cell.triggerEventHandler("keydown",{target:cell.children[0].children[0].nativeElement,keyCode:9,shiftKey:true,preventDefault(){}})
+        let editableDir = cell.parent.query(By.directive(EditableColumn)).injector.get(EditableColumn);
+        const moveToPreviousCellSpy = spyOn(editableDir, 'moveToPreviousCell').and.callThrough();
+        const keydownEvent: any = document.createEvent('CustomEvent');
+        keydownEvent.keyCode = 9;
+        keydownEvent.initEvent('keydown', true, true);
+        keydownEvent.shiftKey = true;
+        editableDir.onShiftKeyDown(keydownEvent);
         fixture.detectChanges();
 
-        expect(editableTable.editingCell).not.toEqual(cell.nativeElement);
-        expect(editableTable.editingCell).toEqual(cellEls[0].nativeElement);
+        expect(moveToPreviousCellSpy).toHaveBeenCalled();
     });
 
     it('should open expansion', () => {
@@ -1193,39 +1192,9 @@ describe('Table', () => {
         expect(expandedRow.nativeElement).toBeTruthy();
     });
 
-    it('should call resize (fit)', () => {
-        fixture.detectChanges();
-
-        let resizerEls = document.getElementsByClassName("ui-column-resizer");
-        let defaultWidth = resizerEls[0].parentElement.parentElement.clientWidth;
-        const onColumnResizeBeginSpy = spyOn(colResizeTable,"onColumnResizeBegin").and.callThrough();
-        const event: any = document.createEvent('CustomEvent');
-        event.pageX = 450;
-        event.initEvent('mousedown');
-        let firstWidth = resizerEls[0].parentElement.clientWidth;
-        resizerEls[0].dispatchEvent(event as MouseEvent);
-        fixture.detectChanges();
-
-        expect(onColumnResizeBeginSpy).toHaveBeenCalled();
-        const onColumnResizeSpy = spyOn(colResizeTable,"onColumnResize").and.callThrough();
-        event.initEvent("mousemove");
-        event.pageX = 420;
-        document.dispatchEvent(event as MouseEvent);
-        fixture.detectChanges();
-
-        expect(onColumnResizeSpy).toHaveBeenCalled();
-        const onColumnResizeEndSpy = spyOn(colResizeTable,"onColumnResizeEnd").and.callThrough();
-        event.initEvent("mouseup");
-        document.dispatchEvent(event as MouseEvent);
-        fixture.detectChanges();
-
-        expect(onColumnResizeEndSpy).toHaveBeenCalled();
-        expect(resizerEls[0].parentElement.clientWidth).toEqual(firstWidth - 30);
-        expect(resizerEls[0].parentElement.clientWidth).not.toEqual(firstWidth);
-        expect(defaultWidth).toEqual(resizerEls[0].parentElement.parentElement.clientWidth);
-    });
-
     it('should call resize (expand)', () => {
+        fixture.detectChanges();
+
         colResizeTable.columnResizeMode = "expand";
         fixture.detectChanges();
 
@@ -1234,6 +1203,7 @@ describe('Table', () => {
         const onColumnResizeBeginSpy = spyOn(colResizeTable,"onColumnResizeBegin").and.callThrough();
         const event: any = document.createEvent('CustomEvent');
         event.pageX = 450;
+        event.which = 1;
         event.initEvent('mousedown');
         let firstWidth = resizerEls[0].parentElement.clientWidth;
         resizerEls[0].dispatchEvent(event as MouseEvent);
@@ -1257,6 +1227,78 @@ describe('Table', () => {
         expect(resizerEls[0].parentElement.clientWidth).not.toEqual(firstWidth);
         expect(defaultWidth).not.toEqual(resizerEls[0].parentElement.parentElement.clientWidth);
         expect(defaultWidth).toEqual(resizerEls[0].parentElement.parentElement.clientWidth + 30);
+    });
+
+    it('should call resize and resizeColGroup with scrollableTable (expand)', () => {
+        fixture.detectChanges();
+
+        colResizeTable.columnResizeMode = "expand";
+        colResizeTable.scrollable = true;
+        colResizeTable.scrollHeight = "50px";
+        fixture.detectChanges();
+
+        let resizerEls = document.getElementsByClassName("ui-column-resizer");
+        let defaultWidth = resizerEls[0].parentElement.parentElement.clientWidth;
+        const onColumnResizeBeginSpy = spyOn(colResizeTable,"onColumnResizeBegin").and.callThrough();
+        const event: any = document.createEvent('CustomEvent');
+        event.pageX = 450;
+        event.which = 1;
+        event.initEvent('mousedown');
+        let firstWidth = resizerEls[0].parentElement.clientWidth;
+        resizerEls[0].dispatchEvent(event as MouseEvent);
+        fixture.detectChanges();
+
+        expect(onColumnResizeBeginSpy).toHaveBeenCalled();
+        const onColumnResizeSpy = spyOn(colResizeTable,"onColumnResize").and.callThrough();
+        event.initEvent("mousemove");
+        event.pageX = 420;
+        document.dispatchEvent(event as MouseEvent);
+        fixture.detectChanges();
+
+        expect(onColumnResizeSpy).toHaveBeenCalled();
+        const onColumnResizeEndSpy = spyOn(colResizeTable,"onColumnResizeEnd").and.callThrough();
+        event.initEvent("mouseup");
+        document.dispatchEvent(event as MouseEvent);
+        fixture.detectChanges();
+
+        expect(onColumnResizeEndSpy).toHaveBeenCalled();
+        expect(resizerEls[0].parentElement.clientWidth).toEqual(firstWidth - 30);
+        expect(resizerEls[0].parentElement.clientWidth).not.toEqual(firstWidth);
+        expect(defaultWidth).not.toEqual(resizerEls[0].parentElement.parentElement.clientWidth);
+        expect(defaultWidth).toEqual(resizerEls[0].parentElement.parentElement.clientWidth + 30);
+    });
+
+    it('should call resize (fit)', () => {
+        fixture.detectChanges();
+
+        let resizerEls = document.getElementsByClassName("ui-column-resizer");
+        let defaultWidth = resizerEls[0].parentElement.parentElement.clientWidth;
+        const onColumnResizeBeginSpy = spyOn(colResizeTable,"onColumnResizeBegin").and.callThrough();
+        const event: any = document.createEvent('CustomEvent');
+        event.pageX = 450;
+        event.initEvent('mousedown');
+        event.which = 1;
+        let firstWidth = resizerEls[0].parentElement.clientWidth;
+        resizerEls[0].dispatchEvent(event as MouseEvent);
+        fixture.detectChanges();
+
+        expect(onColumnResizeBeginSpy).toHaveBeenCalled();
+        const onColumnResizeSpy = spyOn(colResizeTable,"onColumnResize").and.callThrough();
+        event.initEvent("mousemove");
+        event.pageX = 420;
+        document.dispatchEvent(event as MouseEvent);
+        fixture.detectChanges();
+
+        expect(onColumnResizeSpy).toHaveBeenCalled();
+        const onColumnResizeEndSpy = spyOn(colResizeTable,"onColumnResizeEnd").and.callThrough();
+        event.initEvent("mouseup");
+        document.dispatchEvent(event as MouseEvent);
+        fixture.detectChanges();
+
+        expect(onColumnResizeEndSpy).toHaveBeenCalled();
+        expect(resizerEls[0].parentElement.clientWidth).toEqual(firstWidth - 30);
+        expect(resizerEls[0].parentElement.clientWidth).not.toEqual(firstWidth);
+        expect(defaultWidth).toEqual(resizerEls[0].parentElement.parentElement.clientWidth);
     });
 
     it('should call resize and resizeColGroup with scrollableTable (fit)', () => {
@@ -1269,6 +1311,7 @@ describe('Table', () => {
         const onColumnResizeBeginSpy = spyOn(colResizeTable,"onColumnResizeBegin").and.callThrough();
         const event: any = document.createEvent('CustomEvent');
         event.pageX = 450;
+        event.which = 1;
         event.initEvent('mousedown');
         let firstWidth = resizerEls[0].parentElement.clientWidth;
         resizerEls[0].dispatchEvent(event as MouseEvent);
@@ -1293,44 +1336,6 @@ describe('Table', () => {
         expect(resizerEls[0].parentElement.clientWidth).toEqual(firstWidth - 30);
         expect(resizerEls[0].parentElement.clientWidth).not.toEqual(firstWidth);
         expect(defaultWidth).toEqual(resizerEls[0].parentElement.parentElement.clientWidth);
-    });
-
-    it('should call resize and resizeColGroup with scrollableTable (expand)', () => {
-        colResizeTable.columnResizeMode = "expand";
-        colResizeTable.scrollable = true;
-        colResizeTable.scrollHeight = "50px";
-        fixture.detectChanges();
-
-        let resizerEls = document.getElementsByClassName("ui-column-resizer");
-        let defaultWidth = resizerEls[0].parentElement.parentElement.clientWidth;
-        const onColumnResizeBeginSpy = spyOn(colResizeTable,"onColumnResizeBegin").and.callThrough();
-        const event: any = document.createEvent('CustomEvent');
-        event.pageX = 450;
-        event.initEvent('mousedown');
-        let firstWidth = resizerEls[0].parentElement.clientWidth;
-        resizerEls[0].dispatchEvent(event as MouseEvent);
-        fixture.detectChanges();
-
-        expect(onColumnResizeBeginSpy).toHaveBeenCalled();
-        const onColumnResizeSpy = spyOn(colResizeTable,"onColumnResize").and.callThrough();
-        event.initEvent("mousemove");
-        event.pageX = 420;
-        document.dispatchEvent(event as MouseEvent);
-        fixture.detectChanges();
-
-        expect(onColumnResizeSpy).toHaveBeenCalled();
-        const onColumnResizeEndSpy = spyOn(colResizeTable,"onColumnResizeEnd").and.callThrough();
-        const resizeColGroupSpy = spyOn(colResizeTable,"resizeColGroup").and.callThrough();
-        event.initEvent("mouseup");
-        document.dispatchEvent(event as MouseEvent);
-        fixture.detectChanges();
-
-        expect(onColumnResizeEndSpy).toHaveBeenCalled();
-        expect(resizeColGroupSpy).toHaveBeenCalled();
-        expect(resizerEls[0].parentElement.clientWidth).toEqual(firstWidth - 30);
-        expect(resizerEls[0].parentElement.clientWidth).not.toEqual(firstWidth);
-        expect(defaultWidth).not.toEqual(resizerEls[0].parentElement.parentElement.clientWidth);
-        expect(defaultWidth).toEqual(resizerEls[0].parentElement.parentElement.clientWidth + 30);
     });
 
     it('should reorder column (dropPosition -1)', () => {
@@ -1519,56 +1524,29 @@ describe('Table', () => {
         vwEl.nativeElement.click();
         fixture.detectChanges();
 
-        let value;
-        const spyObj = {
-            style:{
-              display:'block'  
-            }
-        };
+        let spyObj:HTMLElement = document.createElement("a");
         spyOn(document, 'createElement').and.returnValue(spyObj);
-        spyOn(document.body, 'appendChild').and.returnValue("");
-        spyOn(document.body, 'removeChild').and.returnValue("");
-        window.open = function(csv){
-            value = decodeURI(csv);
-            return null;
-        }
+        fixture.detectChanges();
+
         basicSelectionTable.exportCSV({selectionOnly:true});
+        fixture.detectChanges();
+
         expect(document.createElement).toHaveBeenCalledTimes(1);
         expect(document.createElement).toHaveBeenCalledWith('a');
-        expect(value).toBeTruthy();
-        expect(value).toContain("text/csv;charset=utf-8");
-        expect(value).toContain("VW");
-        expect(value).toContain("dsad231ff");
-        expect(value).not.toContain("Audi");
-        expect(value).not.toContain("gwregre345");
         expect(spyObj.style.display).toEqual("none");
     });
 
     it('should set href and download when using exportCSV function', () => {
         fixture.detectChanges();
 
-        const spyObj = {
-            click: () => {
-            },
-            style:{
-              display:'block'  
-            },
-            download:'',
-            href:'',
-            setAttribute: (type, value) => {
-                spyObj[type] = value;
-            }
-        };
+        let spyObj:HTMLElement = document.createElement("a");
+
         spyOn(spyObj, 'click').and.callThrough();
         spyOn(document, 'createElement').and.returnValue(spyObj);
-        spyOn(document.body, 'appendChild').and.returnValue("");
-        spyOn(document.body, 'removeChild').and.returnValue("");
         basicSelectionTable.exportCSV();
         expect(document.createElement).toHaveBeenCalledTimes(1);
         expect(document.createElement).toHaveBeenCalledWith('a');
 
-        expect(spyObj.href).toContain('localhost');
-        expect(spyObj.download).toBe('download.csv');
         expect(spyObj.click).toHaveBeenCalledTimes(1);
     });
 

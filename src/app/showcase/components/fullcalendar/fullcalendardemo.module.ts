@@ -3,14 +3,14 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {FullCalendarDemo} from './fullcalendardemo';
 import {FullCalendarDemoRoutingModule} from './fullcalendardemo-routing.module';
-import {FullCalendarModule} from '../../../components/fullcalendar/fullcalendar';
-import {DialogModule} from '../../../components/dialog/dialog';
-import {InputTextModule} from '../../../components/inputtext/inputtext';
-import {CalendarModule} from '../../../components/calendar/calendar';
-import {CheckboxModule} from '../../../components/checkbox/checkbox';
-import {ButtonModule} from '../../../components/button/button';
-import {TabViewModule} from '../../../components/tabview/tabview';
-import {CodeHighlighterModule} from '../../../components/codehighlighter/codehighlighter';
+import {FullCalendarModule} from 'primeng/fullcalendar';
+import {DialogModule} from 'primeng/dialog';
+import {InputTextModule} from 'primeng/inputtext';
+import {CalendarModule} from 'primeng/calendar';
+import {CheckboxModule} from 'primeng/checkbox';
+import {ButtonModule} from 'primeng/button';
+import {TabViewModule} from 'primeng/tabview';
+import { AppCodeModule } from '../../app.code.component';
 
 @NgModule({
 	imports: [
@@ -24,7 +24,7 @@ import {CodeHighlighterModule} from '../../../components/codehighlighter/codehig
         CheckboxModule,
         ButtonModule,
         TabViewModule,
-        CodeHighlighterModule
+        AppCodeModule
 	],
 	declarations: [
 		FullCalendarDemo

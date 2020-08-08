@@ -1,51 +1,72 @@
 import {Component,OnInit} from '@angular/core';
-import {Car} from '../../components/domain/car';
 import {CarService} from '../../service/carservice';
-import {LazyLoadEvent,SelectItem} from '../../../components/common/api';
+import {LazyLoadEvent,SelectItem} from 'primeng/api';
+import { Product } from '../../domain/product';
+import { ProductService } from '../../service/productservice';
 
 @Component({
     templateUrl: './virtualscrollerdemo.html',
     styles: [`
-        .car-item .ui-md-3 {
-            text-align: center;
-        }
-        
-        .car-item .ui-g-10 {
-            font-weight: bold;
+        .product-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
         }
 
-        .empty-car-item-index {
-            background-color: #f1f1f1;
+        .product-details > div {
+            display: flex;
+            align-items: center;
+        }
+
+        .product-item-image {
+            margin-right: 14px;
             width: 60px;
             height: 60px;
-            margin: 36px auto 0 auto;
-            animation: pulse 1s infinite ease-in-out;
         }
 
-        .empty-car-item-image {
+        .empty-product-item-image {
             background-color: #f1f1f1;
-            width: 120px;
-            height: 120px;
             animation: pulse 1s infinite ease-in-out;
+            margin-right: 14px;
+            border-radius: 3px;
         }
 
-        .empty-car-item-text {
+        .empty-product-item-text {
             background-color: #f1f1f1;
-            height: 18px;
+            height: 19px;
             animation: pulse 1s infinite ease-in-out;
+            display: block;
+            width: 100px;
+            margin-bottom: 2px;
+            border-radius: 3px;
+        }
+
+        .empty-product-item-button {
+            background-color: #f1f1f1;
+            height: 33px;
+            width: 33px;
+            animation: pulse 1s infinite ease-in-out;
+            display: block;
+            border-radius: 3px;
+        }
+
+        .list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .title-container {
-            padding: 1em;
-            text-align: right;
-        }
-
-        .sort-container {
             text-align: left;
         }
 
+        .sort-container {
+            text-align: right;
+        }
+
         @media (max-width: 40em) {
-            .car-item {
+            .product-item {
                 text-align: center;
             }
         }
@@ -53,93 +74,37 @@ import {LazyLoadEvent,SelectItem} from '../../../components/common/api';
 })
 export class VirtualScrollerDemo implements OnInit {
 
-    cars: Car[] = [];
+    products: Product[];
 
-    lazyCars: Car[];
-    
-    brands: string[];
-
-    colors: string[];
-
-    totalLazyCarsLength: number;
-
-    timeout: any;
+    virtualProducts: Product[];
 
     sortKey: string;
 
     sortOptions: SelectItem[];
 
-    constructor(private carService: CarService) { }
+    constructor(private carService: CarService, private productService: ProductService) {}
 
     ngOnInit() {
-        this.brands = [
-            'Audi', 'BMW', 'Fiat', 'Ford', 'Honda', 'Jaguar', 'Mercedes', 'Renault', 'Volvo', 'VW'
-        ];
-
-        this.colors = [
-            'Black', 'White', 'Red', 'Blue', 'Silver', 'Green', 'Yellow'
-        ];
-
-        for (let i = 0; i < 10000; i++) {
-            this.cars.push(this.generateCar());
-        }
-
-        //in a real application, make a remote request to retrieve the number of records only, not the actual records
-        this.totalLazyCarsLength = 10000;
+        this.products = Array.from({length: 10000}).map(() => this.productService.generatePrduct());
+        this.virtualProducts = Array.from({length: 10000});
 
         this.sortOptions = [
-            {label: 'Newest First', value: '!year'},
-            {label: 'Oldest First', value: 'year'}
+            {label: 'Cheapest First', value: 'price'},
+            {label: 'Expensive First', value: '!price'}
         ];
     }
 
-    generateCar(): Car {
-        return {
-            vin: this.generateVin(),
-            brand: this.generateBrand(),
-            color: this.generateColor(),
-            year: this.generateYear()
-        }
-    }
+    loadCarsLazy(event: LazyLoadEvent) {       
+        // simulate remote connection with a timeout 
+        setTimeout(() => {
+            //load data of required page
+            let loadedProducts = this.products.slice(event.first, (event.first + event.rows));
 
-    generateVin() {
-        let text = "";
-        let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        
-        for (var i = 0; i < 5; i++) {
-            text += possible.charAt(Math.floor(Math.random() * possible.length));
-        }
-        
-        return text;
-    }
-
-    generateBrand() {
-        return this.brands[Math.floor(Math.random() * Math.floor(10))];
-    }
-
-    generateColor() {
-        return this.colors[Math.floor(Math.random() * Math.floor(7))];
-    }
-
-    generateYear() {
-        return 2000 + Math.floor(Math.random() * Math.floor(19));
-    }
-
-    loadCarsLazy(event: LazyLoadEvent) {
-        //in a real application, make a remote request to load data using state metadata from event
-        //event.first = First row offset
-        //event.rows = Number of rows per page
-
-        //imitate db connection over a network
-        if (this.timeout) {
-            clearTimeout(this.timeout);
-        }
-        
-        this.timeout = setTimeout(() => {
-            this.lazyCars = [];
-            if (this.cars) {
-                this.lazyCars = this.cars.slice(event.first, (event.first + event.rows));
-            }
+            //populate page of virtual cars
+            Array.prototype.splice.apply(this.virtualProducts, [...[event.first, event.rows], ...loadedProducts]);
+            
+            //trigger change detection
+            this.virtualProducts = [...this.virtualProducts];
         }, 1000);
     }
 
@@ -151,15 +116,15 @@ export class VirtualScrollerDemo implements OnInit {
     }
 
     sort(order: number): void {
-        let cars = [...this.cars];
-        cars.sort((data1, data2) => {
-            let value1 = data1.year;
-            let value2 = data2.year;
+        let products = [...this.products];
+        products.sort((data1, data2) => {
+            let value1 = data1.price;
+            let value2 = data2.price;
             let result = (value1 < value2) ? -1 : (value1 > value2) ? 1 : 0;
 
             return (order * result);
         });
 
-        this.cars = cars;
+        this.products = products;
     }
 }

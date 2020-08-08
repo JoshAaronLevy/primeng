@@ -1,19 +1,19 @@
-import {NgModule,Directive,ElementRef,HostListener,Input,Output,DoCheck,EventEmitter,Optional} from '@angular/core';
-import {NgModel} from '@angular/forms';
+import {NgModule,Directive,ElementRef,HostListener,Input,Output,DoCheck,EventEmitter,Optional, AfterViewInit, AfterContentInit, OnInit, OnDestroy} from '@angular/core';
+import {NgModel, NgControl} from '@angular/forms';
 import {CommonModule} from '@angular/common';
+import { Subscription } from 'rxjs';
 
 @Directive({
     selector: '[pInputTextarea]',
     host: {
-        '[class.ui-inputtext]': 'true',
-        '[class.ui-corner-all]': 'true',
-        '[class.ui-inputtextarea-resizable]': 'autoResize',
-        '[class.ui-state-default]': 'true',
-        '[class.ui-widget]': 'true',
-        '[class.ui-state-filled]': 'filled'
+        '[class.p-inputtextarea]': 'true',
+        '[class.p-inputtext]': 'true',
+        '[class.p-component]': 'true',
+        '[class.p-filled]': 'filled',
+        '[class.p-inputtextarea-resizable]': 'autoResize'
     }
 })
-export class InputTextarea implements DoCheck {
+export class InputTextarea implements OnInit, OnDestroy  {
     
     @Input() autoResize: boolean;
     
@@ -23,23 +23,29 @@ export class InputTextarea implements DoCheck {
 
     cachedScrollHeight:number;
 
-    constructor(public el: ElementRef, @Optional() public ngModel: NgModel) {}
+    ngModelSubscription: Subscription;
+
+    ngControlSubscription: Subscription;
+
+    constructor(public el: ElementRef, @Optional() public ngModel: NgModel, @Optional() public control : NgControl) {}
         
-    ngDoCheck() {
-        this.updateFilledState();
-        
-        if (this.autoResize) {
-            this.resize();
+    ngOnInit() {
+        if (this.ngModel) {
+            this.ngModelSubscription = this.ngModel.valueChanges.subscribe(() =>{
+                this.updateState();
+            })
+        }
+
+        if (this.control) {
+            this.ngControlSubscription = this.control.valueChanges.subscribe(() => {
+                this.updateState();
+            });
         }
     }
-    
-    //To trigger change detection to manage ui-state-filled for material labels when there is no value binding
+
     @HostListener('input', ['$event'])
     onInput(e) {
-        this.updateFilledState();
-        if (this.autoResize) {
-            this.resize(e);
-        }
+        this.updateState();
     }
     
     updateFilledState() {
@@ -61,6 +67,7 @@ export class InputTextarea implements DoCheck {
     }
     
     resize(event?: Event) {
+        this.el.nativeElement.style.height = 'auto';
         this.el.nativeElement.style.height = this.el.nativeElement.scrollHeight + 'px';
 
         if (parseFloat(this.el.nativeElement.style.height) >= parseFloat(this.el.nativeElement.style.maxHeight)) {
@@ -72,6 +79,24 @@ export class InputTextarea implements DoCheck {
         }
 
         this.onResize.emit(event||{});
+    }
+
+    updateState() {
+        this.updateFilledState();
+            
+        if (this.autoResize) {
+            this.resize();
+        }
+    }
+
+    ngOnDestroy() {
+        if (this.ngModelSubscription) {
+            this.ngModelSubscription.unsubscribe();
+        }
+
+        if (this.ngControlSubscription) {
+            this.ngControlSubscription.unsubscribe();
+        }
     }
 }
 

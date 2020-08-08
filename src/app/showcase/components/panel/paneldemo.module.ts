@@ -1,12 +1,12 @@
-import {NgModule}     from '@angular/core';
+import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {PanelDemo} from './paneldemo';
 import {PanelDemoRoutingModule} from './paneldemo-routing.module';
-import {PanelModule} from '../../../components/panel/panel';
-import {ToastModule} from '../../../components/toast/toast';
-import {SplitButtonModule} from '../../../components/splitbutton/splitbutton';
-import {TabViewModule} from '../../../components/tabview/tabview';
-import {CodeHighlighterModule} from '../../../components/codehighlighter/codehighlighter';
+import {PanelModule} from 'primeng/panel';
+import {ToastModule} from 'primeng/toast';
+import { MenuModule } from 'primeng/menu';
+import {TabViewModule} from 'primeng/tabview';
+import {AppCodeModule} from '../../app.code.component';
 
 @NgModule({
 	imports: [
@@ -14,9 +14,9 @@ import {CodeHighlighterModule} from '../../../components/codehighlighter/codehig
 		PanelDemoRoutingModule,
         PanelModule,
         ToastModule,
-        SplitButtonModule,
-        TabViewModule,
-        CodeHighlighterModule
+		TabViewModule,
+		AppCodeModule,
+		MenuModule
 	],
 	declarations: [
 		PanelDemo

@@ -1,15 +1,13 @@
 import {NgModule,Directive,ElementRef,HostListener,Input,OnDestroy,DoCheck,NgZone} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {DomHandler} from '../dom/domhandler';
+import {DomHandler} from 'primeng/dom';
 
 @Directive({
     selector: '[pPassword]',
     host: {
-        '[class.ui-inputtext]': 'true',
-        '[class.ui-corner-all]': 'true',
-        '[class.ui-state-default]': 'true',
-        '[class.ui-widget]': 'true',
-        '[class.ui-state-filled]': 'filled'
+        '[class.p-inputtext]': 'true',
+        '[class.p-component]': 'true',
+        '[class.p-filled]': 'filled'
     }
 })
 export class Password implements OnDestroy,DoCheck {
@@ -42,7 +40,6 @@ export class Password implements OnDestroy,DoCheck {
         this.updateFilledState();
     }
     
-    //To trigger change detection to manage ui-state-filled for material labels when there is no value binding
     @HostListener('input', ['$event']) 
     onInput(e) {
         this.updateFilledState();
@@ -54,11 +51,11 @@ export class Password implements OnDestroy,DoCheck {
 
     createPanel() {
         this.panel = document.createElement('div');
-        this.panel.className = 'ui-password-panel ui-widget ui-state-highlight ui-corner-all';
+        this.panel.className = 'p-password-panel p-component p-password-panel-overlay p-connected-overlay';
         this.meter = document.createElement('div');
-        this.meter.className = 'ui-password-meter';
+        this.meter.className = 'p-password-meter';
         this.info = document.createElement('div');
-        this.info.className = 'ui-password-info';
+        this.info.className = 'p-password-info';
         this.info.textContent = this.promptLabel;
         this.panel.appendChild(this.meter);
         this.panel.appendChild(this.info);
@@ -66,29 +63,30 @@ export class Password implements OnDestroy,DoCheck {
         document.body.appendChild(this.panel);
     }
         
-    @HostListener('focus', ['$event']) 
-    onFocus(e) {
+    @HostListener('focus') 
+    onFocus() {
         if (this.feedback) {
             if (!this.panel) {
                 this.createPanel();
             }
     
             this.panel.style.zIndex = String(++DomHandler.zindex);
+            this.panel.style.display = 'block';
             this.zone.runOutsideAngular(() => {
+                
                 setTimeout(() => {
-                    DomHandler.addClass(this.panel, 'ui-password-panel-visible');
-                    DomHandler.removeClass(this.panel, 'ui-password-panel-hidden');
+                    DomHandler.addClass(this.panel, 'p-connected-overlay-visible');
                 }, 1);
-                DomHandler.absolutePosition(this.panel, this.el.nativeElement);
             });
+            DomHandler.absolutePosition(this.panel, this.el.nativeElement);
         }
     }
     
-    @HostListener('blur', ['$event']) 
-    onBlur(e) {   
+    @HostListener('blur') 
+    onBlur() {   
         if (this.feedback) {
-            DomHandler.addClass(this.panel, 'ui-password-panel-hidden');
-            DomHandler.removeClass(this.panel, 'ui-password-panel-visible');
+            DomHandler.addClass(this.panel, 'p-connected-overlay-hidden');
+            DomHandler.removeClass(this.panel, 'p-connected-overlay-visible');
 
             this.zone.runOutsideAngular(() => {
                 setTimeout(() => {
@@ -105,22 +103,22 @@ export class Password implements OnDestroy,DoCheck {
             label = null,
             meterPos = null;
 
-            if(value.length === 0) {
+            if (value.length === 0) {
                 label = this.promptLabel;
                 meterPos = '0px 0px';
             }
             else {
                 var score = this.testStrength(value);
 
-                if(score < 30) {
+                if (score < 30) {
                     label = this.weakLabel;
                     meterPos = '0px -10px';
                 }
-                else if(score >= 30 && score < 80) {
+                else if (score >= 30 && score < 80) {
                     label = this.mediumLabel;
                     meterPos = '0px -20px';
                 } 
-                else if(score >= 80) {
+                else if (score >= 80) {
                     label = this.strongLabel;
                     meterPos = '0px -30px';
                 }
@@ -133,7 +131,7 @@ export class Password implements OnDestroy,DoCheck {
     
     testStrength(str: string) {
         let grade: number = 0;
-        let val;
+        let val: RegExpMatchArray;
 
         val = str.match('[0-9]');
         grade += this.normalize(val ? val.length : 1/4, 1) * 25;
@@ -155,7 +153,7 @@ export class Password implements OnDestroy,DoCheck {
     normalize(x, y) {
         let diff = x - y;
 
-        if(diff <= 0)
+        if (diff <= 0)
             return x / y;
         else
             return 1 + 0.5 * (x / (x + y/4));

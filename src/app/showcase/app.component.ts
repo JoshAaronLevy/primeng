@@ -1,70 +1,85 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
+import { AppConfigService } from './service/appconfigservice';
+import { AppConfig } from './domain/appconfig';
+import { Subscription } from 'rxjs';
+import { PrimeNGConfig } from 'primeng/api';
+
+declare let gtag: Function;
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit{
+export class AppComponent implements OnInit, OnDestroy {
 
     menuActive: boolean;
 
-    activeMenuId: string;
+    newsActive: boolean = false;
 
-    darkDemoStyle: HTMLStyleElement;
+    config: AppConfig;
 
-    routes: Array<string> = [];
+    public subscription: Subscription;
 
-    filteredRoutes: Array<string> = [];
-
-    searchText:string;
-
-    constructor(private router:Router){}
+    constructor(private router: Router, private configService: AppConfigService, private primengConfig: PrimeNGConfig) {}
 
     ngOnInit() {
-        let routes = this.router.config;
-        for (let route of routes) {
-            if (route.path && route.path !== "datatable" && route.path !== "datagrid" && route.path !== "datalist" && route.path !== "datascroller" && route.path !== "growl")
-                this.routes.push(route.path.charAt(0).toUpperCase() + route.path.substr(1));
-        }
-    }
+        this.primengConfig.ripple = true;
+        this.config = this.configService.config;
+        this.subscription = this.configService.configUpdate$.subscribe(config => this.config = config);
 
-    selectRoute(routeName) {
-        this.router.navigate(['/'+routeName.toLowerCase()]);
-        this.filteredRoutes = [];
-        this.searchText = "";
-    }
+        this.router.events.subscribe(event => {
+            if (event instanceof NavigationEnd) {
+                gtag('config', 'UA-93461466-1',
+                      {
+                        'page_path': '/primeng' + event.urlAfterRedirects
+                      }
+                );
 
-    filterRoutes(event) {
-        let query = event.query;
-        this.filteredRoutes = this.routes.filter(route => {
-            return route.toLowerCase().includes(query.toLowerCase());
+                this.hideMenu();
+             }
         });
+
+        this.newsActive = this.newsActive && sessionStorage.getItem('primenews-hidden') == null;
     }
 
-    changeTheme(event: Event, theme: string, dark: boolean) {
-        let themeLink: HTMLLinkElement = <HTMLLinkElement> document.getElementById('theme-css');
-        themeLink.href = 'assets/components/themes/' + theme + '/theme.css';
-
-        if (dark) {
-            if (!this.darkDemoStyle) {
-                this.darkDemoStyle = document.createElement('style');
-                this.darkDemoStyle.type = 'text/css';
-                this.darkDemoStyle.innerHTML = '.implementation { background-color: #3f3f3f; color: #dedede} .implementation > h3, .implementation > h4{ color: #dedede}';
-                document.body.appendChild(this.darkDemoStyle);
-            }
-        }
-        else if(this.darkDemoStyle) {
-            document.body.removeChild(this.darkDemoStyle);
-            this.darkDemoStyle = null;
-        }
-        
-        event.preventDefault();
+    onMenuButtonClick() {
+        this.menuActive = true;
+        this.addClass(document.body, 'blocked-scroll');
     }
 
-    onMenuButtonClick(event: Event) {
-        this.menuActive = !this.menuActive;
-        event.preventDefault();
+    onMaskClick() {
+        this.hideMenu();
+    }
+
+    hideMenu() {
+        this.menuActive = false;
+        this.removeClass(document.body, 'blocked-scroll');
+    }
+
+    addClass(element: any, className: string) {
+        if (element.classList)
+            element.classList.add(className);
+        else
+            element.className += ' ' + className;
+    }
+
+    removeClass(element: any, className: string) {
+        if (element.classList)
+            element.classList.remove(className);
+        else
+            element.className = element.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+    }
+
+    hideNews() {
+        this.newsActive = false;
+        sessionStorage.setItem('primenews-hidden', 'true');
+    }
+
+    ngOnDestroy() {
+        if (this.subscription) {
+            this.subscription.unsubscribe();
+        }
     }
 }

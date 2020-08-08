@@ -1,15 +1,15 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { InputTextModule } from '../../../components/inputtext/inputtext';
 import { IconsComponent } from './icons.component';
 import { IconsRoutingModule } from './icons-routing.module';
-import { CodeHighlighterModule } from '../../../components/codehighlighter/codehighlighter';
+import { InputTextModule } from 'primeng/inputtext';
+import { AppCodeModule } from '../../app.code.component';
 
 @NgModule({
     imports: [
         CommonModule,
         InputTextModule,
-        CodeHighlighterModule,
+        AppCodeModule,
         IconsRoutingModule
     ],
     declarations: [

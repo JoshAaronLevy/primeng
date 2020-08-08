@@ -1,13 +1,13 @@
 import {Component,OnInit} from '@angular/core';
-import {MessageService} from '../../../components/common/messageservice';
-import {MenuItem} from '../../../components/common/api';
+import {MessageService} from 'primeng/api';
+import {MenuItem} from 'primeng/api';
 
 @Component({
     templateUrl: './splitbuttondemo.html',
     providers: [MessageService],
     styles: [`
-        :host ::ng-deep .ui-splitbutton {
-            margin-right: .25em;
+        :host ::ng-deep .p-splitbutton {
+            margin-right: .25rem;
         }
     `]
 })
@@ -26,6 +26,7 @@ export class SplitButtonDemo implements OnInit {
                 this.delete();
             }},
             {label: 'Angular.io', icon: 'pi pi-info', url: 'http://angular.io'},
+            {separator:true},
             {label: 'Setup', icon: 'pi pi-cog', routerLink: ['/setup']}
         ];
     }
@@ -41,4 +42,5 @@ export class SplitButtonDemo implements OnInit {
     delete() {
         this.messageService.add({severity:'success', summary:'Success', detail:'Data Deleted'});
     }
+
 }

@@ -1,11 +1,11 @@
-import {NgModule}     from '@angular/core';
+import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {StepsDemo} from './stepsdemo';
 import {StepsDemoRoutingModule} from './stepsdemo-routing.module';
-import {StepsModule} from '../../../components/steps/steps';
-import {ToastModule} from '../../../components/toast/toast';
-import {TabViewModule} from '../../../components/tabview/tabview';
-import {CodeHighlighterModule} from '../../../components/codehighlighter/codehighlighter';
+import {StepsModule} from 'primeng/steps';
+import {ToastModule} from 'primeng/toast';
+import {TabViewModule} from 'primeng/tabview';
+import { AppCodeModule } from '../../app.code.component';
 
 @NgModule({
 	imports: [
@@ -13,8 +13,8 @@ import {CodeHighlighterModule} from '../../../components/codehighlighter/codehig
 		StepsDemoRoutingModule,
         StepsModule,
         ToastModule,
-        TabViewModule,
-        CodeHighlighterModule
+		TabViewModule,
+		AppCodeModule,
 	],
 	declarations: [
 		StepsDemo
